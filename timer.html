@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        #header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td {
+            background-color: #f2f2f2;
+        }
+
+        button.stop {
+            background-color: #e74c3c;
+        }
+
+        button.stopped {
+            background-color: #f2f2f2;
+            color: #333;
+            cursor: default;
+        }
+
+        #elapsedTime {
+            background-color: #3498db;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>Stopwatch</h1>
+        <div id="elapsedTime">Elapsed Time: <span id="elapsedTimeValue">0:00</span></div>
+        <button onclick="startRace()">Start Race</button>
+    </div>
+
+    <table id="runnersTable">
+        <!-- Runner buttons will be dynamically added here -->
+    </table>
+
+    <div id="stopwatchContainer" style="display: none;">
+        <h2>Stopwatch</h2>
+        <table id="results">
+            <tr>
+                <th>Runner</th>
+                <th>Elapsed Time</th>
+                <th>Action</th>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        let startTime;
+        let elapsedTimeInterval;
+        const elapsedTimeValue = document.getElementById("elapsedTimeValue");
+        const resultsTable = document.getElementById("results");
+        const runnersTable = document.getElementById("runnersTable");
+        const stopwatchContainer = document.getElementById("stopwatchContainer");
+
+        function startRace() {
+            startTime = new Date().getTime();
+            clearTable();
+            createRunnersTable();
+            stopwatchContainer.style.display = "block";
+            startElapsedTimeUpdater();
+        }
+
+        function stopRunner(runnerNumber, button) {
+            if (!startTime) {
+                alert("Race has not started.");
+                return;
+            }
+
+            const elapsedTime = (new Date().getTime()) - startTime;
+            displayResult(runnerNumber, elapsedTime, button);
+        }
+
+        function displayResult(runnerNumber, elapsedTime, button) {
+            const newRow = resultsTable.insertRow(-1);
+            const cell1 = newRow.insertCell(0);
+            const cell2 = newRow.insertCell(1);
+            const cell3 = newRow.insertCell(2);
+            cell1.innerHTML = `Runner ${runnerNumber}`;
+            cell2.innerHTML = formatTime(elapsedTime);
+
+            const stopButton = document.createElement("button");
+            stopButton.textContent = `Stop Runner ${runnerNumber}`;
+            stopButton.className = "stopped";
+            stopButton.disabled = true;
+            cell3.appendChild(stopButton);
+
+            // Remove the original stop button from the runner table
+            button.parentNode.removeChild(button);
+        }
+
+        function formatTime(milliseconds) {
+            const minutes = Math.floor(milliseconds / (60 * 1000));
+            const seconds = Math.floor((milliseconds % (60 * 1000)) / 1000);
+            const millisecondsPart = Math.floor((milliseconds % 1000) / 10); // Two decimal places
+
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}.${millisecondsPart < 10 ? '0' : ''}${millisecondsPart}`;
+        }
+
+        function clearTable() {
+            while (resultsTable.rows.length > 1) {
+                resultsTable.deleteRow(1);
+            }
+        }
+
+        function createRunnersTable() {
+            for (let i = 1; i <= 10; i++) {
+                const row = runnersTable.insertRow(-1);
+
+                for (let j = 1; j <= 10; j++) {
+                    const cell = row.insertCell(-1);
+                    const runnerNumber = (i - 1) * 10 + j;
+
+                    const stopButton = document.createElement("button");
+                    stopButton.textContent = `Stop Runner ${runnerNumber}`;
+                    stopButton.className = "stop";
+                    stopButton.onclick = function () {
+                        stopRunner(runnerNumber, stopButton);
+                    };
+
+                    cell.appendChild(stopButton);
+                }
+            }
+        }
+
+        function startElapsedTimeUpdater() {
+            elapsedTimeInterval = setInterval(function () {
+                const currentElapsedTime = (new Date().getTime()) - startTime;
+                elapsedTimeValue.textContent = formatTime(currentElapsedTime);
+            }, 100);
+        }
+
+        function stopElapsedTimeUpdater() {
+            clearInterval(elapsedTimeInterval);
+        }
+    </script>
+</body>
+</html>
